@@ -1,4 +1,4 @@
-# Cognitive Assesment Web Application -Universal Questionnaire Engine (UQE)
+# Cognitive Assesment Web Application – Universal Questionnaire Engine (UQE)
 
 ## Overview
 
@@ -31,6 +31,7 @@ The system eliminates hardcoded business logic by enabling fully configurable wo
 ## Backend
 
 * Python
+* FastAPI
 * SQLite
 * REST APIs
 * JSON Configuration
@@ -90,7 +91,7 @@ The system eliminates hardcoded business logic by enabling fully configurable wo
 
 # Project Structure
 
-```bash id="w1f6hr"
+```bash id="5w48xg"
 hopeline_out/
 │
 ├── static/
@@ -104,6 +105,7 @@ hopeline_out/
 │
 ├── hopeline.db
 ├── main.py
+├── requirements.txt
 └── output.png
 ```
 
@@ -152,12 +154,52 @@ hopeline_out/
 
 ## quiz.js
 
-* Handles:
+Handles:
 
-  * User interaction
-  * State transitions
-  * Dynamic question rendering
-  * Validation logic
+* User interaction
+* State transitions
+* Dynamic question rendering
+* Validation logic
+
+---
+
+# Local Setup
+
+## Prerequisites
+
+* Python 3.10+
+* pip
+
+---
+
+## 1. Create Virtual Environment
+
+```bash id="s7c9a4"
+python -m venv venv
+```
+
+
+---
+
+## 2. Install Dependencies
+
+```bash id="dbn1pz"
+pip install -r requirements.txt
+```
+
+---
+
+## 3. Run the Application
+
+```bash id="0y9jv3"
+uvicorn main:app --reload
+```
+
+Application runs at:
+
+```text id="rk9jfj"
+http://127.0.0.1:8000
+```
 
 ---
 
