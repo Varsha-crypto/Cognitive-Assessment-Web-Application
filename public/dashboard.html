@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Noise Filter — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080c14;--surface:#0e1420;--card:#131b2a;--card2:#0f1825;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.11);
+  --accent:#00f5d4;--accent2:#f72585;--accent3:#ffd60a;--blue:#4361ee;--orange:#ff9500;
+  --text:#e2e8f0;--text2:#a0aec0;--muted:#4a5568;--danger:#ff3860;
+  --nb-bg:rgba(8,12,20,0.97);--nb-border:rgba(255,255,255,0.07);
+  --font-hd:'Orbitron',monospace;--font-bd:'Rajdhani',sans-serif;--green:#39d353;
+}
+body.light{--bg:#f0f4ff;--surface:#ffffff;--card:#ffffff;--card2:#f8faff;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);--accent:#0077bb;--accent2:#e5175a;--accent3:#d4a017;--blue:#3451d1;--text:#1a202c;--text2:#4a5568;--muted:#718096;--danger:#e5175a;--nb-bg:rgba(255,255,255,0.97);--nb-border:rgba(0,0,0,0.09);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font-bd);transition:background .3s,color .3s;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,245,212,0.018)1px,transparent 1px),linear-gradient(90deg,rgba(0,245,212,0.018)1px,transparent 1px);background-size:42px 42px;animation:grid-drift 22s linear infinite;}
+body.light::before{background-image:linear-gradient(rgba(0,119,187,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,119,187,0.03)1px,transparent 1px);}
+@keyframes grid-drift{to{background-position:42px 42px;}}
+#bg-shapes{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.gbs{position:absolute;opacity:0;animation:gbs-float linear infinite;}
+@keyframes gbs-float{0%{transform:translateY(110vh) rotate(0deg);opacity:0;}5%{opacity:1;}95%{opacity:1;}100%{transform:translateY(-15vh) rotate(360deg);opacity:0;}}
+#navbar{position:fixed;top:0;left:0;right:0;height:50px;z-index:900;background:var(--nb-bg);border-bottom:1px solid var(--nb-border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;backdrop-filter:blur(14px);}
+.nb-brand{font-family:var(--font-hd);font-size:12px;font-weight:700;letter-spacing:3px;color:var(--accent);text-shadow:0 0 14px var(--accent);user-select:none;}
+.nb-actions{display:flex;align-items:center;gap:6px;}
+.nb-sep{width:1px;height:24px;background:var(--nb-border);margin:0 4px;flex-shrink:0;}
+.nb-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:6px 13px;font-family:var(--font-bd);font-size:14px;font-weight:600;letter-spacing:.5px;color:var(--text2);cursor:pointer;transition:all .18s ease;white-space:nowrap;}
+body.light .nb-btn{background:rgba(0,0,0,0.03);}
+.nb-btn:hover{background:rgba(0,245,212,0.1);border-color:rgba(0,245,212,0.35);color:var(--accent);transform:translateY(-1px);}
+.nb-btn.is-active{background:rgba(0,245,212,0.1);border-color:rgba(0,245,212,0.35);color:var(--accent);}
+#main{position:relative;z-index:1;padding:70px 24px 40px;max-width:1200px;margin:0 auto;}
+#loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;}
+.spinner{width:48px;height:48px;border:3px solid rgba(0,245,212,0.15);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:var(--font-hd);font-size:11px;letter-spacing:3px;color:var(--muted);}
+#error-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:12px;}
+.err-icon{font-size:3rem;}
+.err-title{font-family:var(--font-hd);font-size:16px;letter-spacing:3px;color:var(--danger);}
+.err-sub{font-size:14px;color:var(--muted);max-width:380px;line-height:1.7;}
+.btn-retry{margin-top:16px;background:linear-gradient(135deg,var(--accent),#00c9a7);border:none;border-radius:10px;padding:12px 32px;font-family:var(--font-hd);font-size:11px;font-weight:700;letter-spacing:3px;color:#080c14;cursor:pointer;transition:opacity .2s;}
+.btn-retry:hover{opacity:.88;}
+#empty-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;}
+.es-icon{font-size:4rem;margin-bottom:16px;opacity:.6;}
+.es-title{font-family:var(--font-hd);font-size:18px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;}
+.es-sub{font-size:14px;color:var(--muted);max-width:340px;line-height:1.7;}
+.btn-play{margin-top:28px;background:linear-gradient(135deg,var(--accent),#00c9a7);border:none;border-radius:10px;padding:13px 36px;font-family:var(--font-hd);font-size:11px;font-weight:700;letter-spacing:3px;color:#080c14;cursor:pointer;transition:transform .15s,opacity .2s;}
+.btn-play:hover{opacity:.88;transform:translateY(-2px);}
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+.ph-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.22);border-radius:30px;padding:4px 14px;font-size:10px;letter-spacing:4px;color:var(--accent);margin-bottom:10px;text-transform:uppercase;}
+body.light .ph-tag{background:rgba(0,119,187,0.06);border-color:rgba(0,119,187,0.2);}
+.ph-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 1.6s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.5);}}
+.ph-title{font-family:var(--font-hd);font-size:clamp(22px,4vw,34px);font-weight:900;color:var(--text);}
+.ph-title em{font-style:normal;color:var(--accent);text-shadow:0 0 22px var(--accent);}
+body.light .ph-title em{text-shadow:none;}
+.ph-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.ph-right{display:flex;align-items:center;gap:10px;}
+.player-select{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 16px;font-family:var(--font-bd);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;outline:none;min-width:180px;}
+body.light .player-select{background:#fff;}
+.btn-refresh{background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.25);border-radius:10px;padding:9px 16px;font-family:var(--font-hd);font-size:10px;letter-spacing:2px;color:var(--accent);cursor:pointer;transition:all .18s;}
+.btn-refresh:hover{background:rgba(0,245,212,0.18);}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:28px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;animation:fade-up .5s ease both;}
+.kpi:hover{transform:translateY(-2px);border-color:var(--border2);}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2.5px;}
+.kpi-cyan::after{background:var(--accent);}.kpi-pink::after{background:var(--accent2);}.kpi-yellow::after{background:var(--accent3);}.kpi-blue::after{background:var(--blue);}.kpi-green::after{background:var(--green);}.kpi-orange::after{background:var(--orange);}
+.kpi-icon{font-size:18px;margin-bottom:8px;}
+.kpi-val{font-family:var(--font-hd);font-size:clamp(22px,3.5vw,30px);font-weight:900;color:var(--text);line-height:1;margin-bottom:4px;}
+.kpi-lbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:700px){.dash-grid{grid-template-columns:1fr;}}
+.dash-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:900px){.dash-grid-3{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.dash-grid-3{grid-template-columns:1fr;}}
+.span-2{grid-column:span 2;}
+@media(max-width:700px){.span-2{grid-column:span 1;}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;animation:fade-up .5s ease both;}
+.panel-title{font-family:var(--font-hd);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.panel-title-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+#chart-accuracy{width:100%;height:160px;position:relative;}
+.chart-svg{width:100%;height:100%;overflow:visible;}
+.chart-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.chart-area{fill:url(#areaGrad);opacity:.35;}
+.chart-dot{fill:var(--accent);stroke:var(--bg);stroke-width:2;cursor:pointer;}
+.chart-grid-line{stroke:rgba(255,255,255,0.05);stroke-width:1;}
+body.light .chart-grid-line{stroke:rgba(0,0,0,0.06);}
+.chart-label{font-family:'Orbitron',monospace;font-size:9px;fill:var(--muted);}
+.chart-tooltip{position:absolute;background:rgba(8,12,22,0.95);border:1px solid rgba(255,255,255,0.11);border-radius:10px;padding:8px 13px;font-family:'Orbitron',monospace;font-size:10px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50;white-space:nowrap;color:var(--text);}
+body.light .chart-tooltip{background:rgba(255,255,255,0.97);}
+.lv-row{margin-bottom:14px;}.lv-row:last-child{margin-bottom:0;}
+.lv-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.lv-name{font-size:12px;font-weight:700;letter-spacing:1px;}
+.lv-stats{font-family:var(--font-hd);font-size:10px;color:var(--muted);}
+.lv-bar-track{height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;}
+body.light .lv-bar-track{background:rgba(0,0,0,0.06);}
+.lv-bar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.23,1,.32,1);}
+.lv-bar-fill.lv1{background:linear-gradient(90deg,#00f5d4,#00c9a7);}.lv-bar-fill.lv2{background:linear-gradient(90deg,#4361ee,#7b8ff5);}.lv-bar-fill.lv3{background:linear-gradient(90deg,#f72585,#b5179e);}.lv-bar-fill.lv4{background:linear-gradient(90deg,#ffd60a,#ff9500);}
+.pd-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}.pd-row:last-child{margin-bottom:0;}
+.pd-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;}
+.pd-label{font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pd-bar-wrap{flex:2;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;}
+body.light .pd-bar-wrap{background:rgba(0,0,0,0.06);}
+.pd-bar{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.23,1,.32,1);}
+.pd-count{font-family:var(--font-hd);font-size:10px;color:var(--muted);flex-shrink:0;width:28px;text-align:right;}
+.sessions-table{width:100%;border-collapse:collapse;}
+.sessions-table th{font-family:var(--font-hd);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:0 10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.sessions-table td{padding:11px 10px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle;}
+.sessions-table tr:last-child td{border-bottom:none;}
+.sessions-table tr:hover td{background:rgba(255,255,255,0.02);color:var(--text);}
+body.light .sessions-table tr:hover td{background:rgba(0,0,0,0.02);}
+.tbl-name{font-weight:700;color:var(--text);font-size:14px;}
+.tbl-acc{font-family:var(--font-hd);font-size:12px;font-weight:700;}
+.tbl-acc.hi{color:var(--accent);}.tbl-acc.mid{color:var(--accent3);}.tbl-acc.lo{color:var(--danger);}
+.tbl-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-family:var(--font-hd);font-size:8px;font-weight:700;letter-spacing:2px;}
+.no-sessions{text-align:center;padding:32px;color:var(--muted);font-size:14px;}
+.rt-gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;}
+.rt-val{font-family:var(--font-hd);font-size:clamp(24px,4vw,34px);font-weight:900;color:var(--text);}
+.rt-unit{font-family:var(--font-hd);font-size:11px;color:var(--muted);letter-spacing:2px;}
+.streak-display{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;}
+.streak-fire{font-size:3rem;animation:streak-bob .9s ease-in-out infinite alternate;}
+@keyframes streak-bob{from{transform:scale(1);}to{transform:scale(1.1);}}
+.streak-num{font-family:var(--font-hd);font-size:clamp(40px,6vw,56px);font-weight:900;color:var(--orange);text-shadow:0 0 28px rgba(255,149,0,0.45);}
+.streak-lbl{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.fm-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;}
+.fm-card{border-radius:10px;padding:14px;text-align:center;}
+.fm-false{background:rgba(255,56,96,0.07);border:1px solid rgba(255,56,96,0.18);}
+.fm-miss{background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.18);}
+.fm-val{font-family:var(--font-hd);font-size:26px;font-weight:900;}
+.fm-false .fm-val{color:var(--danger);}.fm-miss .fm-val{color:var(--accent3);}
+.fm-lbl{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.best-game{background:linear-gradient(135deg,rgba(0,245,212,0.07),rgba(67,97,238,0.07));border:1px solid rgba(0,245,212,0.15);border-radius:12px;padding:16px;margin-top:4px;}
+.bg-label{font-family:var(--font-hd);font-size:9px;letter-spacing:3px;color:var(--accent);margin-bottom:10px;}
+.bg-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;}
+.bg-row:last-child{border-bottom:none;}
+.bg-key{color:var(--text2);}.bg-val{font-family:var(--font-hd);font-size:11px;font-weight:700;color:var(--text);}
+.no-data{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px;gap:6px;}
+.no-data-icon{font-size:1.8rem;opacity:.4;}
+.no-data-txt{font-size:12px;color:var(--muted);letter-spacing:1px;}
+@keyframes fade-up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div id="bg-shapes"></div>
+<nav id="navbar">
+  <div class="nb-brand">🎯 NOISE FILTER</div>
+  <div class="nb-actions">
+    <button class="nb-btn" id="nb-theme"><span>🌙</span><span>Dark</span></button>
+    <div class="nb-sep"></div>
+    <button class="nb-btn" onclick="window.location.href='/'"><span>🎮</span><span>Play</span></button>
+  </div>
+</nav>
+
+<div id="main">
+  <div id="loading-state">
+    <div class="spinner"></div>
+    <div class="loading-text">LOADING SESSION DATA...</div>
+  </div>
+  <div id="error-state">
+    <div class="err-icon">⚠️</div>
+    <div class="err-title">SERVER NOT RUNNING</div>
+    <div class="err-sub">Could not connect to the backend. Make sure you run <code style="color:var(--accent);background:rgba(0,245,212,0.1);padding:2px 8px;border-radius:4px;">node server.js</code> in your project folder first, then open <code style="color:var(--accent);background:rgba(0,245,212,0.1);padding:2px 8px;border-radius:4px;">http://localhost:3000/dashboard</code></div>
+    <button class="btn-retry" onclick="loadData()">↺ RETRY</button>
+  </div>
+  <div id="empty-state">
+    <div class="es-icon">🧠</div>
+    <div class="es-title">NO SESSIONS YET</div>
+    <div class="es-sub">Play at least one full game to see your cognitive performance metrics here.</div>
+    <button class="btn-play" onclick="window.location.href='/'">START PLAYING →</button>
+  </div>
+  <div id="dash-content" style="display:none;">
+    <div class="page-header">
+      <div>
+        <div class="ph-tag"><div class="ph-dot"></div>Performance Analytics</div>
+        <h1 class="ph-title">PLAYER <em>DASHBOARD</em></h1>
+        <p class="ph-sub">COGNITIVE PERFORMANCE TRACKER · LIVE FROM DATABASE</p>
+      </div>
+      <div class="ph-right">
+        <select class="player-select" id="player-select"><option value="__all__">All Players</option></select>
+        <button class="btn-refresh" onclick="loadData()">↺ REFRESH</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi kpi-cyan" style="animation-delay:.05s"><div class="kpi-icon">🎯</div><div class="kpi-val" id="kpi-sessions">—</div><div class="kpi-lbl">Total Sessions</div></div>
+      <div class="kpi kpi-green" style="animation-delay:.1s"><div class="kpi-icon">✅</div><div class="kpi-val" id="kpi-hits">—</div><div class="kpi-lbl">Total Hits</div></div>
+      <div class="kpi kpi-blue" style="animation-delay:.15s"><div class="kpi-icon">📊</div><div class="kpi-val" id="kpi-acc">—</div><div class="kpi-lbl">Avg Accuracy</div></div>
+      <div class="kpi kpi-pink" style="animation-delay:.2s"><div class="kpi-icon">⚡</div><div class="kpi-val" id="kpi-rt">—</div><div class="kpi-lbl">Avg Reaction</div></div>
+      <div class="kpi kpi-yellow" style="animation-delay:.25s"><div class="kpi-icon">🏆</div><div class="kpi-val" id="kpi-maxlevel">—</div><div class="kpi-lbl">Max Level</div></div>
+      <div class="kpi kpi-orange" style="animation-delay:.3s"><div class="kpi-icon">👤</div><div class="kpi-val" id="kpi-players">—</div><div class="kpi-lbl">Players</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel span-2" style="animation-delay:.1s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent)"></div>ACCURACY OVER SESSIONS</div>
+        <div id="chart-accuracy"><div class="no-data"><div class="no-data-icon">📈</div><div class="no-data-txt">Need 2+ sessions</div></div></div>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel" style="animation-delay:.15s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent2)"></div>LEVEL ACCURACY BREAKDOWN</div>
+        <div id="level-bars"><div class="no-data"><div class="no-data-icon">📶</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+      <div class="panel" style="animation-delay:.2s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>ATTENTION PROFILES</div>
+        <div id="profile-dist"><div class="no-data"><div class="no-data-icon">🧠</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+    </div>
+    <div class="dash-grid-3">
+      <div class="panel" style="animation-delay:.2s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent3)"></div>BEST REACTION TIME</div>
+        <div class="rt-gauge-wrap" id="rt-gauge"><div class="no-data"><div class="no-data-icon">⚡</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+      <div class="panel" style="animation-delay:.25s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--orange)"></div>HIGHEST ACCURACY</div>
+        <div class="streak-display" id="best-acc-display"><div class="no-data"><div class="no-data-icon">🎯</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+      <div class="panel" style="animation-delay:.3s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--danger)"></div>ERROR BREAKDOWN</div>
+        <div class="fm-compare" id="fm-compare">
+          <div class="fm-card fm-false"><div class="fm-val">—</div><div class="fm-lbl">FALSE PRESSES</div></div>
+          <div class="fm-card fm-miss"><div class="fm-val">—</div><div class="fm-lbl">MISSES</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel" style="animation-delay:.3s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent)"></div>PERSONAL BEST SESSION</div>
+        <div id="best-game-panel"><div class="no-data"><div class="no-data-icon">🏆</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+      <div class="panel" style="animation-delay:.35s">
+        <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent2)"></div>DOMINANT PROFILE</div>
+        <div id="profile-summary"><div class="no-data"><div class="no-data-icon">📊</div><div class="no-data-txt">No data</div></div></div>
+      </div>
+    </div>
+    <div class="panel" style="animation-delay:.4s;margin-bottom:0;">
+      <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>SESSION HISTORY (LATEST 100)</div>
+      <div style="overflow-x:auto;">
+        <table class="sessions-table">
+          <thead><tr><th>#</th><th>PLAYER</th><th>ACCURACY</th><th>HITS</th><th>FALSE</th><th>MISSES</th><th>REACTION</th><th>MAX LVL</th><th>PROFILE</th><th>DATE</th></tr></thead>
+          <tbody id="sessions-tbody"><tr><td colspan="10" class="no-sessions">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const PROFILES={focused:{label:'FOCUSED MIND',icon:'🎯',color:'#00f5d4'},impulsive:{label:'IMPULSIVE PATTERN',icon:'⚡',color:'#f72585'},distracted:{label:'HIGH DISTRACTION',icon:'🌀',color:'#ffd60a'},balanced:{label:'BALANCED FOCUS',icon:'⚖️',color:'#4361ee'},overloaded:{label:'COGNITIVE OVERLOAD',icon:'🔋',color:'#ff9500'}};
+const LEVEL_META=[{name:'CLEAN SIGNAL',color:'#00f5d4',cls:'lv1'},{name:'VISUAL NOISE',color:'#4361ee',cls:'lv2'},{name:'PRECISION FILTERING',color:'#f72585',cls:'lv3'},{name:'NEGATIVE INTERFERENCE',color:'#ffd60a',cls:'lv4'}];
+let allSessions=[],currentPlayer='__all__';
+
+async function loadData(){
+  showState('loading');
+  try{
+    const res=await fetch('/api/sessions');
+    if(!res.ok)throw new Error('API error');
+    const data=await res.json();
+    allSessions=data.sessions||[];
+    rebuildPlayerSelect();
+    render();
+  }catch(e){showState('error');}
+}
+
+function showState(s){
+  document.getElementById('loading-state').style.display=s==='loading'?'flex':'none';
+  document.getElementById('error-state').style.display=s==='error'?'flex':'none';
+  document.getElementById('empty-state').style.display=s==='empty'?'flex':'none';
+  document.getElementById('dash-content').style.display=s==='dash'?'':'none';
+}
+
+function rebuildPlayerSelect(){
+  const sel=document.getElementById('player-select');
+  const players=[...new Set(allSessions.map(s=>s.player_id||'Anonymous'))];
+  sel.innerHTML='<option value="__all__">All Players</option>';
+  players.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
+  sel.value=currentPlayer;
+}
+
+document.getElementById('player-select').addEventListener('change',e=>{currentPlayer=e.target.value;render();});
+
+function getFiltered(){
+  if(currentPlayer==='__all__')return allSessions;
+  return allSessions.filter(s=>(s.player_id||'Anonymous')===currentPlayer);
+}
+
+function render(){
+  const sessions=getFiltered();
+  if(sessions.length===0){showState(allSessions.length===0?'empty':'empty');return;}
+  showState('dash');
+  renderKPIs(sessions);renderAccuracyChart(sessions);renderLevelBars(sessions);
+  renderProfiles(sessions);renderRTGauge(sessions);renderBestAcc(sessions);
+  renderErrors(sessions);renderBestGame(sessions);renderProfileSummary(sessions);renderTable(sessions);
+}
+
+function renderKPIs(sessions){
+  const n=sessions.length;
+  setText('kpi-sessions',n);
+  setText('kpi-hits',sessions.reduce((a,s)=>a+(s.hits||0),0));
+  setText('kpi-acc',Math.round(sessions.reduce((a,s)=>a+(s.accuracy||0),0)/n)+'%');
+  setText('kpi-rt',Math.round(sessions.reduce((a,s)=>a+(s.avg_reaction_ms||0),0)/n)+'ms');
+  setText('kpi-maxlevel','LVL '+Math.max(...sessions.map(s=>s.max_level||1),1));
+  setText('kpi-players',new Set(sessions.map(s=>s.player_id||'Anonymous')).size);
+}
+
+function renderAccuracyChart(sessions){
+  const wrap=document.getElementById('chart-accuracy');
+  if(sessions.length<2){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">📈</div><div class="no-data-txt">Need 2+ sessions</div></div>';return;}
+  const last=[...sessions].reverse().slice(-20); // sessions from API are DESC; reverse → chronological, take last 20
+  const W=800,H=160,PL=32,PR=20,PT=14,PB=30,cW=W-PL-PR,cH=H-PT-PB;
+  const vals=last.map(s=>s.accuracy||0);
+  const minV=Math.max(0,Math.min(...vals)-5),maxV=Math.min(100,Math.max(...vals)+5);
+  const xS=i=>PL+(i/(last.length-1))*cW,yS=v=>PT+cH-((v-minV)/(maxV-minV))*cH;
+  const pts=last.map((s,i)=>`${xS(i)},${yS(s.accuracy||0)}`).join(' ');
+  const area=`M ${xS(0)},${PT+cH} `+last.map((s,i)=>`L ${xS(i)},${yS(s.accuracy||0)}`).join(' ')+` L ${xS(last.length-1)},${PT+cH} Z`;
+  const grid=[0,25,50,75,100].map(v=>{const y=yS(Math.max(minV,Math.min(maxV,v)));return y<PT||y>PT+cH?'':
+    `<line class="chart-grid-line" x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}"/><text class="chart-label" x="${PL-6}" y="${y+3}" text-anchor="end">${v}</text>`;}).join('');
+  const dots=last.map((s,i)=>{
+    const x=xS(i),y=yS(s.accuracy||0),date=s.played_at?new Date(s.played_at).toLocaleDateString():'';
+    return `<circle class="chart-dot" cx="${x}" cy="${y}" r="4" data-acc="${s.accuracy}" data-player="${s.player_id||'?'}" data-date="${date}" data-hits="${s.hits||0}" data-rt="${s.avg_reaction_ms||0}" data-idx="${i}"/>`;}).join('');
+  const xl=last.map((s,i)=>{if(last.length>10&&i%3!==0)return '';
+    const d=s.played_at?new Date(s.played_at).toLocaleDateString('en',{month:'short',day:'numeric'}):`S${i+1}`;
+    return `<text class="chart-label" x="${xS(i)}" y="${H-4}" text-anchor="middle">${d}</text>`;}).join('');
+  const isLight=document.body.classList.contains('light');
+  const g1=isLight?'rgba(0,119,187,0.45)':'rgba(0,245,212,0.45)',g2=isLight?'rgba(0,119,187,0)':'rgba(0,245,212,0)';
+  wrap.innerHTML=`<div class="chart-tooltip" id="chart-tooltip"></div><svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${g1}"/><stop offset="100%" stop-color="${g2}"/></linearGradient></defs>${grid}<path class="chart-area" d="${area}"/><polyline class="chart-line" points="${pts}"/>${dots}${xl}</svg>`;
+  const tip=wrap.querySelector('.chart-tooltip');
+  wrap.querySelectorAll('.chart-dot').forEach(dot=>{
+    dot.addEventListener('mouseenter',()=>{
+      tip.innerHTML=`<span style="color:var(--accent);font-weight:700">${dot.getAttribute('data-player')}</span><br/><span style="color:var(--muted)">Accuracy:</span> ${dot.getAttribute('data-acc')}%<br/><span style="color:var(--muted)">Hits:</span> ${dot.getAttribute('data-hits')} &nbsp;<span style="color:var(--muted)">RT:</span> ${dot.getAttribute('data-rt')}ms<br/><span style="color:var(--muted);font-size:9px">${dot.getAttribute('data-date')}</span>`;
+      tip.style.opacity='1';
+      const rect=wrap.getBoundingClientRect(),dr=dot.getBoundingClientRect();
+      let left=dr.left-rect.left+10;if(left+180>rect.width)left-=180;
+      tip.style.left=left+'px';tip.style.top=(dr.top-rect.top-60)+'px';
+    });
+    dot.addEventListener('mouseleave',()=>tip.style.opacity='0');
+  });
+}
+
+function renderLevelBars(sessions){
+  const wrap=document.getElementById('level-bars');
+  const lvData=[1,2,3,4].map(id=>{const s=sessions.filter(x=>(x.max_level||1)>=id);return s.length?{acc:Math.round(s.reduce((a,x)=>a+(x.accuracy||0),0)/s.length),count:s.length}:{acc:0,count:0};});
+  if(lvData.every(d=>d.count===0)){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">📶</div><div class="no-data-txt">No data</div></div>';return;}
+  wrap.innerHTML=lvData.map((d,i)=>{const lv=LEVEL_META[i];return `<div class="lv-row"><div class="lv-meta"><span class="lv-name" style="color:${lv.color}">LV${i+1} · ${lv.name}</span><span class="lv-stats">${d.count} sessions · ${d.acc}%</span></div><div class="lv-bar-track"><div class="lv-bar-fill ${lv.cls}" style="width:0%" data-w="${d.acc}%"></div></div></div>`;}).join('');
+  requestAnimationFrame(()=>wrap.querySelectorAll('.lv-bar-fill').forEach(b=>b.style.width=b.getAttribute('data-w')));
+}
+
+function renderProfiles(sessions){
+  const wrap=document.getElementById('profile-dist');
+  const counts={};sessions.forEach(s=>{const p=s.profile||'balanced';counts[p]=(counts[p]||0)+1;});
+  const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">🧠</div><div class="no-data-txt">No data</div></div>';return;}
+  wrap.innerHTML=entries.map(([pk,cnt])=>{const meta=PROFILES[pk]||{label:pk,icon:'❓',color:'#888'};const pct=Math.round(cnt/sessions.length*100);return `<div class="pd-row"><div class="pd-icon">${meta.icon}</div><div class="pd-label">${meta.label}</div><div class="pd-bar-wrap"><div class="pd-bar" style="background:${meta.color};width:0%" data-w="${pct}%"></div></div><div class="pd-count">${cnt}</div></div>`;}).join('');
+  requestAnimationFrame(()=>wrap.querySelectorAll('.pd-bar').forEach(b=>b.style.width=b.getAttribute('data-w')));
+}
+
+function renderRTGauge(sessions){
+  const wrap=document.getElementById('rt-gauge');
+  const rts=sessions.map(s=>s.avg_reaction_ms||0).filter(v=>v>0);
+  if(!rts.length){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">⚡</div><div class="no-data-txt">No data</div></div>';return;}
+  const best=Math.min(...rts),avg=Math.round(rts.reduce((a,b)=>a+b,0)/rts.length);
+  const pct=Math.max(0,Math.min(1,1-(best-100)/700)),angle=-180+pct*180,rad=(angle*Math.PI)/180;
+  const cx=80,cy=80,r=60,x=cx+r*Math.cos(rad),y=cy+r*Math.sin(rad);
+  const color=best<250?'#00f5d4':best<400?'#ffd60a':'#ff3860';
+  const isLight=document.body.classList.contains('light');
+  wrap.innerHTML=`<svg viewBox="0 0 160 90" width="160" height="90"><path d="M20,80 A60,60 0 0,1 140,80" fill="none" stroke="${isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.07)'}" stroke-width="10" stroke-linecap="round"/><path d="M20,80 A60,60 0 0,1 ${x.toFixed(1)},${y.toFixed(1)}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${color}"/><text x="14" y="92" fill="var(--muted)" font-family="Orbitron" font-size="8">100ms</text><text x="120" y="92" fill="var(--muted)" font-family="Orbitron" font-size="8">800ms</text></svg><div class="rt-val" style="color:${color}">${best}ms</div><div class="rt-unit">BEST REACTION TIME</div><div style="font-size:11px;color:var(--muted);font-family:var(--font-hd);letter-spacing:1px;margin-top:2px;">avg ${avg}ms · ${rts.length} sessions</div>`;
+}
+
+function renderBestAcc(sessions){
+  const wrap=document.getElementById('best-acc-display');
+  const accs=sessions.map(s=>s.accuracy||0);
+  if(!accs.length){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">🎯</div><div class="no-data-txt">No data</div></div>';return;}
+  const best=Math.max(...accs),avg=Math.round(accs.reduce((a,b)=>a+b,0)/accs.length);
+  const color=best>=80?'#00f5d4':best>=60?'#ffd60a':'#ff3860';
+  wrap.innerHTML=`<div class="streak-fire">🎯</div><div class="streak-num" style="color:${color}">${best}%</div><div class="streak-lbl">BEST ACCURACY</div><div style="font-size:11px;color:var(--muted);font-family:var(--font-hd);letter-spacing:1px;margin-top:4px;">avg ${avg}% per session</div>`;
+}
+
+function renderErrors(sessions){
+  const tf=sessions.reduce((a,s)=>a+(s.false_alarms||0),0),tm=sessions.reduce((a,s)=>a+(s.misses||0),0);
+  document.getElementById('fm-compare').innerHTML=`<div class="fm-card fm-false"><div class="fm-val">${tf}</div><div class="fm-lbl">FALSE PRESSES</div></div><div class="fm-card fm-miss"><div class="fm-val">${tm}</div><div class="fm-lbl">MISSES</div></div>`;
+}
+
+function renderBestGame(sessions){
+  const wrap=document.getElementById('best-game-panel');
+  if(!sessions.length){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">🏆</div><div class="no-data-txt">No data</div></div>';return;}
+  const best=sessions.reduce((b,s)=>(s.accuracy||0)>(b.accuracy||0)?s:b,sessions[0]);
+  const P=PROFILES[best.profile||'balanced']||PROFILES.balanced;
+  const date=best.played_at?new Date(best.played_at).toLocaleDateString('en',{year:'numeric',month:'short',day:'numeric'}):'—';
+  wrap.innerHTML=`<div class ="best-game"><div class="bg-label">🏆 PERSONAL BEST</div><div class="bg-row"><span class="bg-key">Player</span><span class="bg-val">${best.player_id||'—'}</span></div><div class="bg-row"><span class="bg-key">Accuracy</span><span class="bg-val" style="color:var(--accent)">${best.accuracy||0}%</span></div><div class="bg-row"><span class="bg-key">Correct Hits</span><span class="bg-val">${best.hits||0}</span></div><div class="bg-row"><span class="bg-key">False Presses</span><span class="bg-val" style="color:var(--danger)">${best.false_alarms||0}</span></div><div class="bg-row"><span class="bg-key">Reaction Time</span><span class="bg-val" style="color:var(--accent3)">${best.avg_reaction_ms||0}ms</span></div><div class="bg-row"><span class="bg-key">Max Level</span><span class="bg-val">LVL ${best.max_level||1}</span></div><div class="bg-row"><span class="bg-key">Profile</span><span class="bg-val" style="color:${P.color}">${P.icon} ${P.label}</span></div><div class="bg-row"><span class="bg-key">Date</span><span class="bg-val">${date}</span></div></div>`;
+}
+
+function renderProfileSummary(sessions){
+  const wrap=document.getElementById('profile-summary');
+  if(!sessions.length){wrap.innerHTML='<div class="no-data"><div class="no-data-icon">📊</div><div class="no-data-txt">No data</div></div>';return;}
+  const counts={};sessions.forEach(s=>{const p=s.profile||'balanced';counts[p]=(counts[p]||0)+1;});
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const P=PROFILES[top[0]]||PROFILES.balanced;
+  const n=sessions.length,avgAcc=Math.round(sessions.reduce((a,s)=>a+(s.accuracy||0),0)/n),avgFalse=(sessions.reduce((a,s)=>a+(s.false_alarms||0),0)/n).toFixed(1);
+  wrap.innerHTML=`<div style="text-align:center;padding:12px 0;"><div style="font-size:2.5rem;margin-bottom:8px">${P.icon}</div><div style="font-family:var(--font-hd);font-size:13px;font-weight:700;color:${P.color};letter-spacing:2px;margin-bottom:8px">${P.label}</div><div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px">Most common across ${n} sessions</div></div><div class="bg-row"><span class="bg-key">Avg Accuracy</span><span class="bg-val" style="color:var(--accent)">${avgAcc}%</span></div><div class="bg-row"><span class="bg-key">Avg False Presses</span><span class="bg-val" style="color:var(--danger)">${avgFalse}</span></div><div class="bg-row"><span class="bg-key">Total Sessions</span><span class="bg-val">${n}</span></div>`;
+}
+
+function renderTable(sessions){
+  const tbody=document.getElementById('sessions-tbody');
+  if(!sessions.length){tbody.innerHTML='<tr><td colspan="10" class="no-sessions">No sessions yet</td></tr>';return;}
+  tbody.innerHTML=sessions.map((s,i)=>{
+    const acc=s.accuracy||0,accCls=acc>=75?'hi':acc>=50?'mid':'lo';
+    const P=PROFILES[s.profile||'balanced']||PROFILES.balanced;
+    const date=s.played_at?new Date(s.played_at).toLocaleDateString('en',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const lv=LEVEL_META[(s.max_level||1)-1]||LEVEL_META[0];
+    return `<tr><td style="color:var(--muted);font-family:var(--font-hd);font-size:10px">${sessions.length-i}</td><td class="tbl-name">${s.player_id||'Anonymous'}</td><td><span class="tbl-acc ${accCls}">${acc}%</span></td><td style="color:var(--green);font-family:var(--font-hd);font-size:12px">${s.hits||0}</td><td style="color:var(--danger);font-family:var(--font-hd);font-size:12px">${s.false_alarms||0}</td><td style="color:var(--accent3);font-family:var(--font-hd);font-size:12px">${s.misses||0}</td><td style="font-family:var(--font-hd);font-size:11px">${s.avg_reaction_ms||0}ms</td><td style="color:${lv.color};font-family:var(--font-hd);font-size:10px">LVL ${s.max_level||1}</td><td><span class="tbl-badge" style="background:${P.color}18;color:${P.color};border:1px solid ${P.color}33">${P.icon} ${P.label}</span></td><td style="font-size:11px;color:var(--muted)">${date}</td></tr>`;
+  }).join('');
+}
+
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+
+function loadTheme(){const s=localStorage.getItem('nf-theme');if(s==='light'){document.body.classList.add('light');updateThemeBtn(false);}}
+let isDark=!document.body.classList.contains('light');
+document.getElementById('nb-theme').addEventListener('click',()=>{isDark=!isDark;document.body.classList.toggle('light',!isDark);localStorage.setItem('nf-theme',isDark?'dark':'light');updateThemeBtn(isDark);render();});
+function updateThemeBtn(dark){const btn=document.getElementById('nb-theme'),spans=btn.querySelectorAll('span');if(dark){spans[0].textContent='🌙';spans[1].textContent='Dark';btn.classList.remove('is-active');}else{spans[0].textContent='☀️';spans[1].textContent='Light';btn.classList.add('is-active');}}
+
+(function(){const c=document.getElementById('bg-shapes');const T=['circle','square','diamond'],C=['rgba(0,245,212,0.09)','rgba(247,37,133,0.07)','rgba(67,97,238,0.09)','rgba(255,214,10,0.07)'];function mk(){const el=document.createElement('div'),t=T[Math.floor(Math.random()*T.length)],size=18+Math.random()*55,col=C[Math.floor(Math.random()*C.length)],dur=16+Math.random()*20;el.className='gbs';el.style.cssText=`left:${Math.random()*100}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:-${Math.random()*dur}s;background:${col};`;if(t==='circle')el.style.borderRadius='50%';else if(t==='diamond'){el.style.transform='rotate(45deg)';el.style.borderRadius='3px';}else el.style.borderRadius='4px';c.appendChild(el);setTimeout(()=>{el.remove();mk();},dur*1000+2000);}for(let i=0;i<12;i++)setTimeout(mk,i*700);})();
+
+loadTheme();
+loadData();
+</script>
+</body>
+</html>
