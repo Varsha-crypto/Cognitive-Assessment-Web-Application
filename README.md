@@ -5,7 +5,7 @@
 Designed and developed a real-time cognitive assessment web application to evaluate **selective attention** and **impulse control** using interactive stimulus-response mechanisms.
 The application simulates continuous attention tasks through dynamic number-stream interactions and measures user response behavior in real time.
 
----
+
 
 ## Features
 
@@ -17,7 +17,7 @@ The application simulates continuous attention tasks through dynamic number-stre
 * Lightweight and responsive UI
 * Gamified behavioral testing experience
 
----
+
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ The application simulates continuous attention tasks through dynamic number-stre
 * CSS
 * Vanilla JavaScript
 
----
+
 
 ## Workflow
 
@@ -36,7 +36,7 @@ The application simulates continuous attention tasks through dynamic number-stre
 5. Calculate scores and behavioral metrics
 6. Display assessment results
 
----
+
 
 ## Core Functionalities
 
@@ -62,7 +62,7 @@ Implemented using vanilla JavaScript:
 * Accuracy measurement
 * Behavioral response analysis
 
----
+
 
 ## UI & Performance
 
@@ -71,7 +71,7 @@ Implemented using vanilla JavaScript:
 * Responsive interface for multiple screen sizes
 * Optimized for smooth real-time interactions
 
----
+
 
 ## Cognitive Modeling
 
@@ -82,7 +82,7 @@ The application workflow is inspired by:
 * Impulse control evaluation systems
 * Gamified cognitive behavioral testing principles
 
----
+
 
 ## Key Contributions
 
@@ -92,7 +92,7 @@ The application workflow is inspired by:
 * Implemented behavioral scoring and validation mechanisms
 * Created responsive UI optimized for performance
 
----
+
 
 ## Future Improvements
 
@@ -103,7 +103,7 @@ The application workflow is inspired by:
 * Backend integration for assessment storage
 * AI-based behavioral analysis
 
----
+
 
 ## Use Cases
 
