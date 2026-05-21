@@ -1,115 +1,193 @@
-# Cognitive Assessment Web Application
+# Cognitive Assesment Web Application -Universal Questionnaire Engine (UQE)
 
 ## Overview
 
-Designed and developed a real-time cognitive assessment web application to evaluate **selective attention** and **impulse control** using interactive stimulus-response mechanisms.
-The application simulates continuous attention tasks through dynamic number-stream interactions and measures user response behavior in real time.
+HOPELINE is a configurable questionnaire and workflow engine designed to support dynamic assessments, adaptive form navigation, and rule-based decision systems.
+The platform enables real-time questionnaire handling with conditional branching, score-based workflow transitions, and configurable red-flag detection using a JSON-driven architecture.
 
+The system eliminates hardcoded business logic by enabling fully configurable workflows, making new questionnaire deployments fast, scalable, and reusable.
 
+---
 
-## Features
+# Features
 
-* Real-time cognitive assessment system
-* Dynamic stimulus-response interaction model
-* Selective attention and impulse control evaluation
-* Timing-based response validation
-* Accuracy and reaction behavior tracking
-* Lightweight and responsive UI
-* Gamified behavioral testing experience
+* Dynamic questionnaire workflow engine
+* Priority-based rule processing
+* Conditional branching logic
+* Real-time questionnaire navigation
+* Red-flag detection and alert handling
+* Score-driven workflow transitions
+* Config-driven architecture using JSON
+* Multi-language questionnaire support
+* Dynamic report generation
+* REST API-based backend architecture
+* Lightweight frontend rendering system
+* Reusable workflow engine design
 
+---
 
+# Tech Stack
 
-## Tech Stack
+## Backend
+
+* Python
+* SQLite
+* REST APIs
+* JSON Configuration
+
+## Frontend
 
 * HTML
 * CSS
-* Vanilla JavaScript
+* JavaScript
 
+---
 
+# System Workflow
 
-## Workflow
+1. Load questionnaire configuration from JSON
+2. Render questionnaire dynamically
+3. Capture user responses
+4. Apply priority-based rules and scoring logic
+5. Trigger conditional branching workflows
+6. Detect red-flag scenarios
+7. Generate dynamic outputs and reports
 
-1. Generate continuous number-stream stimuli
-2. Present target and distraction elements
-3. Capture real-time user responses
-4. Validate timing and accuracy
-5. Calculate scores and behavioral metrics
-6. Display assessment results
+---
 
+# Core Functionalities
 
+## Dynamic Questionnaire Engine
 
-## Core Functionalities
+* Built a reusable engine for adaptive questionnaire systems
+* Enabled dynamic rendering based on configuration-driven workflows
+* Supported intelligent state transitions and branching
 
-### Stimulus-Response System
+## Rule-Based Workflow Processing
 
-* Users respond only to target stimuli
-* Non-target stimuli act as distractions
-* Simulates sustained attention testing environments
+* Implemented score-based decision workflows
+* Added priority-based rule execution
+* Enabled real-time red-flag detection
 
-### Event-Driven Logic
+## Config-Driven Architecture
 
-Implemented using vanilla JavaScript:
+* Removed hardcoded workflow logic
+* Introduced JSON-based workflow configuration
+* Enabled zero-code questionnaire updates
 
-* Keyboard/input handling
-* State transitions
-* Score management
-* Session control
+## REST API Integration
 
-### Timing & Validation
+* Developed backend APIs for frontend communication
+* Maintained separation between frontend and backend systems
+* Enabled scalable modular architecture
 
-* Real-time rendering of stimuli
-* Response time tracking
-* Accuracy measurement
-* Behavioral response analysis
+## Multi-Language Support
 
+* Added configurable language-based questionnaire rendering
+* Supported dynamic localization workflows
 
+---
 
-## UI & Performance
+# Project Structure
 
-* Built without external frameworks
-* Lightweight and fast rendering
-* Responsive interface for multiple screen sizes
-* Optimized for smooth real-time interactions
+```bash id="w1f6hr"
+hopeline_out/
+│
+├── static/
+│   ├── config.js
+│   └── quiz.js
+│
+├── templates/
+│   ├── dashboard.html
+│   ├── patient.html
+│   └── quiz.html
+│
+├── hopeline.db
+├── main.py
+└── output.png
+```
 
+---
 
+# Frontend Components
 
-## Cognitive Modeling
+## dashboard.html
 
-The application workflow is inspired by:
+* Admin/dashboard interface
+* Workflow monitoring and navigation
 
-* Continuous Performance Tests (CPT)
-* Selective attention assessments
-* Impulse control evaluation systems
-* Gamified cognitive behavioral testing principles
+## patient.html
 
+* User/patient interaction page
+* Questionnaire initiation and response handling
 
+## quiz.html
 
-## Key Contributions
+* Dynamic questionnaire rendering interface
+* Real-time interaction and branching logic
 
-* Developed a real-time cognitive testing application
-* Designed dynamic number-stream rendering logic
-* Built event-driven interaction systems
-* Implemented behavioral scoring and validation mechanisms
-* Created responsive UI optimized for performance
+---
 
+# Backend Components
 
+## main.py
 
-## Future Improvements
+* Core backend application
+* API routing and workflow handling
+* Rule-processing engine integration
 
-* Multi-level difficulty adaptation
+## hopeline.db
+
+* Stores questionnaire configurations
+* Response data and workflow states
+
+---
+
+# Configuration System
+
+## config.js
+
+* Dynamic frontend configuration management
+* Questionnaire rendering settings
+
+## quiz.js
+
+* Handles:
+
+  * User interaction
+  * State transitions
+  * Dynamic question rendering
+  * Validation logic
+
+---
+
+# Key Contributions
+
+* Developed a configurable Universal Questionnaire Engine (UQE)
+* Built reusable rule-processing and workflow automation systems
+* Implemented adaptive questionnaire flows with conditional branching
+* Reduced new project setup time from weeks to hours
+* Designed modular REST API architecture
+* Added multilingual support and dynamic reporting capabilities
+
+---
+
+# Future Improvements
+
+* AI-assisted recommendation workflows
+* Visual drag-and-drop workflow builder
+* Cloud deployment support
 * Advanced analytics dashboard
-* Audio and visual cognitive stimuli
-* User progress tracking
-* Backend integration for assessment storage
-* AI-based behavioral analysis
+* Role-based access control (RBAC)
+* Real-time workflow simulation
 
+---
 
+# Use Cases
 
-## Use Cases
-
-* Cognitive behavioral research
-* Attention assessment tools
-* Educational psychology applications
-* Gamified mental training systems
-* Human-computer interaction studies
-* Neurocognitive testing simulations
+* Healthcare assessment platforms
+* Behavioral screening systems
+* Dynamic survey applications
+* Risk assessment workflows
+* Adaptive decision-support systems
+* Enterprise questionnaire management platforms
